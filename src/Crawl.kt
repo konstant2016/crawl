@@ -1,4 +1,5 @@
 import org.jsoup.Jsoup
+import java.lang.Exception
 
 object Crawl {
 
@@ -41,7 +42,7 @@ object Crawl {
         val elements = document.select("div.page > a")  // 获取所有的标签a的元素
         val size = elements[elements.size - 2].text().toInt()   // 获取元素列表中的倒数第二个元素，此元素中包含着当前图片的总数目
 
-        // 取得第一个图片的地址，截取后，用以充当baseUrl
+        // 取得该套图下所有图片的链接地址
         for (index in 1..size) {
             val pictureUrl = crawlPictureUrl("$url/$index")
             list.add(pictureUrl)
@@ -50,9 +51,12 @@ object Crawl {
     }
 
     // 访问网页获取图片地址
-    fun crawlPictureUrl(url: String): String {
-        val document = Jsoup.connect(url).get()
-        return document.select("div.content > a")[0].select("img").attr("src")
+    private fun crawlPictureUrl(url: String): String {
+        return try {
+            val document = Jsoup.connect(url).get()
+            document.select("div.content > a")[0].select("img").attr("src")
+        } catch (ex: Exception) {
+            ""
+        }
     }
-
 }
