@@ -7,7 +7,7 @@ object MainEntrance {
     @JvmStatic
     fun main(args: Array<String>) {
         val netAddress = "http://www.mmjpg.com/"
-        val localAddress = "D:\\Picture"
+        val localAddress = "/Users/konstant/Downloads/picture"
 
         val category = Crawl.crawlCategory(netAddress)
         val file = File(localAddress)
@@ -23,25 +23,30 @@ object MainEntrance {
                     + "类名->" + text
                     + "，链接->" + url)
 
-            val path = "$parentPath\\$text"
+            val path = "$parentPath${File.separatorChar}$text"
             val file = File(path)
             if (!file.exists()) file.mkdir()
             val cover = Crawl.crawlCover(url)
-            createCover(path, cover)
+            Thread{
+                createCover(path, cover)
+            }.start()
         }
     }
 
     // 创建封面的文件夹
     private fun createCover(parentPath: String, coverList: Map<String, String>) {
         coverList.forEach { text, url ->
-            println("创建封面文件夹-->"
+            println("创建封面文件夹："
                     + "封面->" + text
                     + "，链接->" + url)
-            val path = "$parentPath\\$text"
+            val path = "$parentPath${File.separatorChar}$text"
             val file = File(path)
             if (!file.exists()) file.mkdir()
             val picList = Crawl.crawlPictureList(url)
-            downPicture(path, picList)
+            Thread{
+                downPicture(path, picList)
+            }.start()
+
         }
     }
 
@@ -49,20 +54,23 @@ object MainEntrance {
     private fun downPicture(parentPath: String, picList: List<String>) {
         println("---开始下载当前套图图片---")
         picList.forEachIndexed { index, url ->
-            val random = (Math.random() * 5000 + 1000).toLong()
-            println("随机延迟，避免被封，延迟时间->${random / 1000}S")
+            if (url.isEmpty()) return@forEachIndexed
+            val path = "$parentPath${File.separator}$index.jpg"
+            if (File(path).exists()) return@forEachIndexed
+            val random = (Math.random() * 3564 + 32).toLong()
+            println("随机延迟，避免被封，延迟时间->$random MS")
             Thread.sleep(random)
-            if (url.isEmpty()) return
             val bytes = NetworkUtil.get(url)
-            if (bytes.isEmpty()) return
-            println("保存图片：位置->$parentPath\\$index.jpg，链接->$url")
-            saveBitmap(parentPath, bytes, "$index.jpg")
+            if (bytes.isEmpty()) return@forEachIndexed
+            println("保存图片：位置->$parentPath${File.separator}$index.jpg，链接->$url")
+            saveBitmap(path, bytes)
         }
     }
 
     // 保存图片到指定位置
-    private fun saveBitmap(path: String, bytes: ByteArray, name: String) {
-        val file = File(path, name)
+    private fun saveBitmap(path: String, bytes: ByteArray) {
+        val file = File(path)
+        if (!file.exists()) file.createNewFile()
         with(FileOutputStream(file)) {
             write(bytes, 0, bytes.size)
             flush()
