@@ -1,5 +1,6 @@
 import okhttp3.*
 import java.io.IOException
+import java.lang.Exception
 
 object NetworkUtil {
 
@@ -40,9 +41,12 @@ object NetworkUtil {
                 .addHeader("Referer", "http://www.mmjpg.com/")
                 .get()
                 .build()
+        try {
+            val response = mOkHttpClient.newCall(request).execute()
+            if (response.isSuccessful) return response.body().bytes()
+        } catch (e: Exception) {
+        }
 
-        val response = mOkHttpClient.newCall(request).execute()
-        if (response.isSuccessful) return response.body().bytes()
         return ByteArray(0)
     }
 
