@@ -1,5 +1,6 @@
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.Executors
 
 
 // 主要入口
@@ -27,9 +28,7 @@ object MainEntrance {
             val file = File(path)
             if (!file.exists()) file.mkdir()
             val cover = Crawl.crawlCover(url)
-            Thread{
-                createCover(path, cover)
-            }.start()
+            Executors.newCachedThreadPool().execute { createCover(path, cover) }
         }
     }
 
@@ -43,10 +42,7 @@ object MainEntrance {
             val file = File(path)
             if (!file.exists()) file.mkdir()
             val picList = Crawl.crawlPictureList(url)
-            Thread{
-                downPicture(path, picList)
-            }.start()
-
+            Executors.newCachedThreadPool().execute { downPicture(path, picList) }
         }
     }
 
@@ -63,7 +59,7 @@ object MainEntrance {
             val bytes = NetworkUtil.get(url)
             if (bytes.isEmpty()) return@forEachIndexed
             println("保存图片：位置->$parentPath${File.separator}$index.jpg，链接->$url")
-            saveBitmap(path, bytes)
+            Executors.newCachedThreadPool().execute { saveBitmap(path, bytes) }
         }
     }
 
