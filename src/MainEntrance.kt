@@ -8,7 +8,7 @@ object MainEntrance {
     @JvmStatic
     fun main(args: Array<String>) {
         val netAddress = "http://www.mmjpg.com/"
-        val localAddress = "/Users/konstant/Downloads/picture"
+        val localAddress = "D:\\picture"
 
         val category = Crawl.crawlCategory(netAddress)
         val file = File(localAddress)
@@ -53,13 +53,11 @@ object MainEntrance {
             if (url.isEmpty()) return@forEachIndexed
             val path = "$parentPath${File.separator}$index.jpg"
             if (File(path).exists()) return@forEachIndexed
-            val random = (Math.random() * 3564 + 32).toLong()
-            println("随机延迟，避免被封，延迟时间->$random MS")
-            Thread.sleep(random)
-            val bytes = NetworkUtil.get(url)
-            if (bytes.isEmpty()) return@forEachIndexed
-            println("保存图片：位置->$parentPath${File.separator}$index.jpg，链接->$url")
-            Executors.newCachedThreadPool().execute { saveBitmap(path, bytes) }
+            Executors.newCachedThreadPool().execute {
+                val bytes = NetworkUtil.get(url)
+                if (bytes.isEmpty()) return@execute
+                println("保存图片：位置->$parentPath${File.separator}$index.jpg，链接->$url")
+                saveBitmap(path, bytes) }
         }
     }
 
